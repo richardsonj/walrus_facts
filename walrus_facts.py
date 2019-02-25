@@ -73,12 +73,14 @@ def get_fact_index():
 def get_walrus_fact_text():
     return walrus_facts[get_fact_index()]
 
-def post_walrus_fact(channel):
+def post_walrus_fact(channel, contract):
     response = get_walrus_fact_text()
     walrus_fact_number = random.randint(1, 1000)
     while walrus_fact_number == 3:
         walrus_fact_number = random.randint(1, 1000)
     response = "Walrus Fact #" + str(walrus_fact_number) + ": " + response
+    if contract:
+        response = response.replace('a', "'").replace('e', "'").replace('i', "'").replace('o', "'").replace('u', "'")
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
 
@@ -90,12 +92,15 @@ def is_handlable_request(requests):
 ##                    if 'user' in request and request['user'] != BOT_ID:
 ##                        pprint(requests)
 ##                        return True
+                contract = False
+                if 'contract' in request['text'].lower():
+                    contract = True
                 if 'user' in request and request['user'] == WALRUS_USER_ID:
-                    return True
+                    return True, contract
                 if 'text' in request and AT_BOT in request['text'] \
                    and 'fact' in request['text'].lower():
-                    return True
-    return False
+                    return True, contract
+    return False, False
 
 def get_response_channel(requests):
     if requests and len(requests) > 0:
@@ -109,9 +114,10 @@ if __name__ == "__main__":
         print("Walrus Facts connected and running!")
         while True:
             request = slack_client.rtm_read()
-            if is_handlable_request(request):
+            handlable, contract = is_handlable_request(request)
+            if handlable:
                 channel = get_response_channel(request)
-                post_walrus_fact(channel)
+                post_walrus_fact(channel, contract)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
