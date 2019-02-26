@@ -93,7 +93,7 @@ def is_handlable_request(requests):
 ##                        pprint(requests)
 ##                        return True
                 contract = False
-                if 'contract' in request['text'].lower():
+                if 'text' in request and 'contract' in request['text'].lower():
                     contract = True
                 if 'user' in request and request['user'] == WALRUS_USER_ID:
                     return True, contract
