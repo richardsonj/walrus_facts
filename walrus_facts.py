@@ -4,13 +4,20 @@ from slackclient import SlackClient
 from pprint import pprint
 import random
 
-BOT_ID = ''
-GAME_NIGHT_CHANNEL_ID = 'C481QHD8U'
-PM_CHANNEL_ID = ''
-WALRUS_USER_ID = ''
+ssm_client = boto3.client('ssm')
+ssm_response = ssm_client.getParameters(Names=["walrus_facts_api_key", "walrus_facts_bot_id"],WithDecryption=True)
+
+API_KEY = ""
+BOT_ID = ""
+
+for parameter in ssm_response["Parameters"]:
+    if parameter["Name"] == "walrus_facts_api_key":
+        BOT_ID = parameter["Value"]
+    elif parameter["Name"] == "walrus_facts_bot_id":
+        API_KEY = parameter["Value"]
 
 # constants
-AT_BOT = "<@" + BOT_ID + ">"
+AT_BOT = "<@" + BOT_ID
 
 walrus_facts = ['Walruses are dumb',
                 'Walruses can\'t feel love',
@@ -38,7 +45,7 @@ walrus_thens = []
 
 weight_multiplier = .1
 
-slack_client = SlackClient('')
+slack_client = SlackClient(API_KEY)
 
 def create_ranges():
     ranges = [0]*len(walrus_facts)
@@ -88,10 +95,6 @@ def is_handlable_request(requests):
     if requests and len(requests) > 0:
         for request in requests:
             if request and 'type' in request and request['type'] == 'message':
-##                if 'channel' in request and request['channel'] == PM_CHANNEL_ID:
-##                    if 'user' in request and request['user'] != BOT_ID:
-##                        pprint(requests)
-##                        return True
                 contract = False
                 if 'text' in request and 'contract' in request['text'].lower():
                     contract = True
