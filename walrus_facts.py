@@ -5,7 +5,7 @@ from pprint import pprint
 import random
 import boto3
 
-ssm_client = boto3.client('ssm')
+ssm_client = boto3.client('ssm', 'us-east-2')
 ssm_response = ssm_client.getParameters(Names=["walrus_facts_api_key", "walrus_facts_bot_id"],WithDecryption=True)
 
 API_KEY = ""
