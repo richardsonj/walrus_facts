@@ -3,6 +3,7 @@ import time
 from slackclient import SlackClient
 from pprint import pprint
 import random
+import boto3
 
 ssm_client = boto3.client('ssm')
 ssm_response = ssm_client.getParameters(Names=["walrus_facts_api_key", "walrus_facts_bot_id"],WithDecryption=True)
