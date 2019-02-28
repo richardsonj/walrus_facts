@@ -13,12 +13,9 @@ BOT_ID = ""
 
 for parameter in ssm_response["Parameters"]:
     if parameter["Name"] == "walrus_facts_api_key":
-        BOT_ID = parameter["Value"]
-    elif parameter["Name"] == "walrus_facts_bot_id":
         API_KEY = parameter["Value"]
-
-print("BOT_ID:" + BOT_ID)
-print("API_KEY: " + API_KEY)
+    elif parameter["Name"] == "walrus_facts_bot_id":
+        BOT_ID = parameter["Value"]
 
 # constants
 AT_BOT = "<@" + BOT_ID
