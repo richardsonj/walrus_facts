@@ -19,6 +19,7 @@ for parameter in ssm_response["Parameters"]:
 
 # constants
 AT_BOT = "<@" + BOT_ID
+WALRUS_USER_ID = 'U1M01JH4M'
 
 walrus_facts = ['Walruses are dumb',
                 'Walruses can\'t feel love',
