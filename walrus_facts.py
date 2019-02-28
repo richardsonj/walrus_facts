@@ -17,6 +17,9 @@ for parameter in ssm_response["Parameters"]:
     elif parameter["Name"] == "walrus_facts_bot_id":
         API_KEY = parameter["Value"]
 
+print("BOT_ID:" + BOT_ID)
+print("API_KEY: " + API_KEY)
+
 # constants
 AT_BOT = "<@" + BOT_ID
 
