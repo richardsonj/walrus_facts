@@ -6,7 +6,7 @@ import random
 import boto3
 
 ssm_client = boto3.client('ssm', region_name='us-east-2')
-ssm_response = ssm_client.getParameters(Names=["walrus_facts_api_key", "walrus_facts_bot_id"],WithDecryption=True)
+ssm_response = ssm_client.get_parameters(Names=["walrus_facts_api_key", "walrus_facts_bot_id"],WithDecryption=True)
 
 API_KEY = ""
 BOT_ID = ""
