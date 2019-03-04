@@ -103,24 +103,40 @@ def post_not_jacob(channel):
     slack_client.api_call("chat.postMessage", channel=channel,
                           text='Disclaimer: Jacob Richardson is not obligated to attend game night when other users post that emoji', as_user=True)
 
+def post_die(channel):
+    slack_client.api_call("chat.postMessage", channel=channel,
+                          text='You\'ve gone and killed me! You\'re working for walrus, aren\'t you?', as_user=True)
+    raise Exception('Kill command received')
+
+def post_nice_try(channel):
+    slack_client.api_call("chat.postMessage", channel=channel,
+                          text='Nice try! Only <@U11K1E7MG> can kill me', as_user=True)
+    
+
 def get_request_handler(requests):
+    handlers = []
     if requests and len(requests) > 0:
         for request in requests:
             if request and 'type' in request and request['type'] == 'message':
-                contract = 'text' in request and 'contract' in request['text'].lower()
                 if 'user' in request and request['user'] == WALRUS_USER_ID:
                     return post_full_walrus_fact
+
+                contract = 'text' in request and 'contract' in request['text'].lower()
                 if 'text' in request and AT_BOT in request['text'] \
                    and 'fact' in request['text'].lower():
                     if contract:
-                        return post_contracted_walrus_fact
+                        handlers.append(post_contracted_walrus_fact)
                     else:
-                        return post_full_walrus_fact
+                        handlers.append(post_full_walrus_fact)
                 if 'text' in request and ':an-even-longer-emoji-name-for-jacob-richardson-agreeing-to-attend-game-night-because-joseph-is-dumb:' in request['text'] \
                    and 'user' in request and request['user'] != 'U11K1E7MG':
-                    print(request['user'])
-                    return post_not_jacob
-    return None
+                    handlers.append(post_not_jacob)
+                if 'text' in request and 'kill yourself' in request['text']:
+                    if 'user' in request and request['user'] == 'U11K1E7MG':
+                        handlers.append(post_die)
+                    else:
+                        handlers.append(post_nice_try)
+    return handlers
 
 def get_response_channel(requests):
     if requests and len(requests) > 0:
@@ -134,8 +150,8 @@ if __name__ == "__main__":
         print("Walrus Facts connected and running!")
         while True:
             request = slack_client.rtm_read()
-            handler = get_request_handler(request)
-            if handler:
+            handlers = get_request_handler(request)
+            for handler in handlers:
                 channel = get_response_channel(request)
                 handler(channel)
             time.sleep(READ_WEBSOCKET_DELAY)
