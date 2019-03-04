@@ -93,19 +93,34 @@ def post_walrus_fact(channel, contract):
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
 
-def is_handlable_request(requests):
+def post_full_walrus_fact(channel):
+    post_walrus_fact(channel, False)
+
+def post_contracted_walrus_fact(channel):
+    post_walrus_fact(channel, True)
+
+def post_not_jacob(channel):
+    slack_client.api_call("chat.postMessage", channel=channel,
+                          text='Disclaimer: Jacob Richardson is not obligated to attend game night when other users post that emoji', as_user=True)
+
+def get_request_handler(requests):
     if requests and len(requests) > 0:
         for request in requests:
             if request and 'type' in request and request['type'] == 'message':
-                contract = False
-                if 'text' in request and 'contract' in request['text'].lower():
-                    contract = True
+                contract = 'text' in request and 'contract' in request['text'].lower()
                 if 'user' in request and request['user'] == WALRUS_USER_ID:
-                    return True, contract
+                    return post_full_walrus_fact
                 if 'text' in request and AT_BOT in request['text'] \
                    and 'fact' in request['text'].lower():
-                    return True, contract
-    return False, False
+                    if contract:
+                        return post_contracted_walrus_fact
+                    else:
+                        return post_full_walrus_fact
+                if 'text' in request and ':an-even-longer-emoji-name-for-jacob-richardson-agreeing-to-attend-game-night-because-joseph-is-dumb:' in request['text'] \
+                   and 'user' in request and request['user'] != 'U11K1E7MG':
+                    print(request['user'])
+                    return post_not_jacob
+    return None
 
 def get_response_channel(requests):
     if requests and len(requests) > 0:
@@ -119,10 +134,10 @@ if __name__ == "__main__":
         print("Walrus Facts connected and running!")
         while True:
             request = slack_client.rtm_read()
-            handlable, contract = is_handlable_request(request)
-            if handlable:
+            handler = get_request_handler(request)
+            if handler:
                 channel = get_response_channel(request)
-                post_walrus_fact(channel, contract)
+                handler(channel)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
